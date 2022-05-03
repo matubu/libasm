@@ -51,19 +51,33 @@ void	test_strcmp(char *s1, char *s2)
 	printf(", " GREEN "\"%s\"" RESET ", " GREEN "\"%s\"\n" RESET, s1, s2);
 }
 
-void	test_write(const void *buf, size_t len)
-{
-	int ftpipe[2];
-	pipe(ftpipe);
-	const size_t	ftwrite = ft_write(ftpipe[1], buf, len);
-	char			ftwritten[len];
-	read(ftpipe[0], ftwritten, len);
+typedef struct {
+	int ft[2];
+	int std[2];
+}	t_pipes;
 
-	int stdpipe[2];
-	pipe(stdpipe);
-	const size_t	stdwrite = write(stdpipe[1], buf, len);
+t_pipes	pipes_from(int fd)
+{
+	return ((t_pipes){fd, fd, fd, fd});
+}
+
+t_pipes	pipes()
+{
+	t_pipes pipes;
+	pipe(pipes.ft);
+	pipe(pipes.std);
+	return (pipes)
+}
+
+void	test_write(t_pipes pipes, const void *buf, size_t len)
+{
+	const size_t	ftwrite = ft_write(pipes.ft[1], buf, len);
+	char			ftwritten[len];
+	read(pipes.ft[0], ftwritten, len);
+
+	const size_t	stdwrite = write(pipes.std[1], buf, len);
 	char			stdwritten[len];
-	read(stdpipe[0], stdwritten, len);
+	read(pipes.std[0], stdwritten, len);
 
 	printf(ftwrite == stdwrite && !strncmp(ftwritten, stdwritten, len)
 			? PASS
@@ -71,6 +85,9 @@ void	test_write(const void *buf, size_t len)
 	printf(" ft: \"%.*s\" (%zu)", len, ftwritten, ftwrite);
 	printf(" std: \"%.*s\" (%zu)\n", len, stdwritten, stdwrite);
 }
+
+void	test_read()
+{}
 
 int	main(void)
 {
@@ -92,12 +109,14 @@ int	main(void)
 	test_strcmp("\0a", "\0b");
 
 	puts("--- Write ---");
-	test_write("Hello world", 11);
-	test_write("\0yo", 3);
-	test_write("Error fd Hello world", 8);
+	test_write(pipes(), "Hello world", 11);
+	test_write(pipes(), "\0yo", 3);
+	test_write(pipes(), "Error fd Hello world", 8);
+	test_write(pipes_from(-1), "Error fd Hello world", 8);
 
 	puts("--- Read ---");
-	test_read("hello world", 10);
+	test_read(pipes(), "Hello world", 8);
+	test_read(pipes_from(-1), "Hello world", 8);
 
 	return (0);
 }
