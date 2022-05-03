@@ -2,7 +2,7 @@ section .text
 
 global _ft_strcpy
 
-;;;;; char *ft_strcpy(char *dst: rdi, char *src: rsi) -> rax
+; char *ft_strcpy(char *dst: rdi, char *src: rsi) -> rax
 _ft_strcpy:
 	mov rax, rdi
 
