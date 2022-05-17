@@ -58,7 +58,7 @@ typedef struct {
 
 t_pipes	pipes_from(int fd)
 {
-	return ((t_pipes){fd, fd, fd, fd});
+	return ((t_pipes){{ fd, fd }, { fd, fd }});
 }
 
 t_pipes	pipes()
@@ -66,28 +66,30 @@ t_pipes	pipes()
 	t_pipes pipes;
 	pipe(pipes.ft);
 	pipe(pipes.std);
-	return (pipes)
+	return (pipes);
 }
 
 void	test_write(t_pipes pipes, const void *buf, size_t len)
 {
-	const size_t	ftwrite = ft_write(pipes.ft[1], buf, len);
+	const ssize_t	ftwrite = ft_write(pipes.ft[1], buf, len);
 	char			ftwritten[len];
 	read(pipes.ft[0], ftwritten, len);
 
-	const size_t	stdwrite = write(pipes.std[1], buf, len);
+	const ssize_t	stdwrite = write(pipes.std[1], buf, len);
 	char			stdwritten[len];
 	read(pipes.std[0], stdwritten, len);
 
 	printf(ftwrite == stdwrite && !strncmp(ftwritten, stdwritten, len)
 			? PASS
 			: FAIL);
-	printf(" ft: \"%.*s\" (%zu)", len, ftwritten, ftwrite);
-	printf(" std: \"%.*s\" (%zu)\n", len, stdwritten, stdwrite);
+	printf(" ft: \"%.*s\" (%zi)", (int)len, ftwritten, ftwrite);
+	printf(" std: \"%.*s\" (%zi)\n", (int)len, stdwritten, stdwrite);
+
+	// check errno
 }
 
-void	test_read()
-{}
+// void	test_read()
+// {}
 
 int	main(void)
 {
@@ -114,9 +116,9 @@ int	main(void)
 	test_write(pipes(), "Error fd Hello world", 8);
 	test_write(pipes_from(-1), "Error fd Hello world", 8);
 
-	puts("--- Read ---");
-	test_read(pipes(), "Hello world", 8);
-	test_read(pipes_from(-1), "Hello world", 8);
+	// puts("--- Read ---");
+	// test_read(pipes(), "Hello world", 8);
+	// test_read(pipes_from(-1), "Hello world", 8);
 
 	return (0);
 }
