@@ -1,9 +1,9 @@
 section .text
 
-global _ft_strlen
+global ft_strlen
 
 ; size_t ft_strlen(const char *s: rdi) -> rax
-_ft_strlen:
+ft_strlen:
 	xor rax, rax            ; set len to 0
 
 _ft_strlen_loop:

@@ -5,9 +5,11 @@
 #include <sys/types.h>
 #include "libasm.h"
 
+#define ERROR "\033[91mError\033[0m "
 #define GREEN "\033[92m"
 #define ORANGE "\033[33m"
 #define RESET "\033[0m"
+#define ENDL RESET "\n"
 
 #define BG_RED "\033[101;30m"
 #define BG_GREEN "\033[102;30m"
@@ -21,9 +23,9 @@ void	test_strlen(char *s)
 	const size_t	stdlen = strlen(s);
 
 	printf(ftlen == stdlen ? PASS : FAIL);
-	printf(" ft:" ORANGE "%3lu" RESET, ftlen);
-	printf(" std:" ORANGE "%3lu" RESET, stdlen);
-	printf(", " GREEN "\"%s\"\n" RESET, s);
+	printf(" (" GREEN "\"%s\"" RESET ") =>", s);
+	printf(" ft: " ORANGE "%lu" RESET, ftlen);
+	printf(" std: " ORANGE "%lu" ENDL, stdlen);
 }
 
 void	test_strcpy(char *src)
@@ -35,9 +37,9 @@ void	test_strcpy(char *src)
 	const char	*stdcpy = strcpy(stddst, src);
 
 	printf(ftcpy == ftdst && !strcmp(ftdst, stddst) ? PASS : FAIL);
+	printf(" (" GREEN "\"%s\"" RESET ") =>", src);
 	printf(" ft: " GREEN "\"%s\"" RESET, ftcpy);
-	printf(" std: " GREEN "\"%s\"" RESET, stdcpy);
-	printf(", " GREEN "\"%s\"\n" RESET, src);
+	printf(" std: " GREEN "\"%s\"" ENDL, stdcpy);
 }
 
 void	test_strcmp(char *s1, char *s2)
@@ -46,9 +48,9 @@ void	test_strcmp(char *s1, char *s2)
 	const int	stdcmp = strcmp(s1, s2);
 
 	printf(ftcmp == stdcmp ? PASS : FAIL);
-	printf(" ft:" ORANGE "%3d" RESET, ftcmp);
-	printf(" std:" ORANGE "%3d" RESET, stdcmp);
-	printf(", " GREEN "\"%s\"" RESET ", " GREEN "\"%s\"\n" RESET, s1, s2);
+	printf(" (" GREEN "\"%s\"" RESET ", " GREEN "\"%s\"" RESET ") =>", s1, s2);
+	printf(" ft: " ORANGE "%d" RESET, ftcmp);
+	printf(" std: " ORANGE "%d" ENDL, stdcmp);
 }
 
 typedef struct {
@@ -64,8 +66,10 @@ t_pipes	pipes_from(int fd)
 t_pipes	pipes()
 {
 	t_pipes pipes;
-	pipe(pipes.ft);
-	pipe(pipes.std);
+	if (pipe(pipes.ft) < 0 || pipe(pipes.std) < 0) {
+		printf(ERROR "could not create pipes");
+		exit(1);
+	}
 	return (pipes);
 }
 
@@ -73,7 +77,9 @@ void	test_write(t_pipes pipes, const void *buf, size_t len)
 {
 	const ssize_t	ftwrite = ft_write(pipes.ft[1], buf, len);
 	char			ftwritten[len];
+	printf("write\n");
 	read(pipes.ft[0], ftwritten, len);
+	printf("read\n");
 
 	const ssize_t	stdwrite = write(pipes.std[1], buf, len);
 	char			stdwritten[len];

@@ -1,9 +1,9 @@
 section .text
 
-global _ft_strcpy
+global ft_strcpy
 
 ; char *ft_strcpy(char *dst: rdi, char *src: rsi) -> rax
-_ft_strcpy:
+ft_strcpy:
 	mov rax, rdi
 
 _ft_strcpy_loop:
