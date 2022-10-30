@@ -152,6 +152,15 @@ void	test_strdup(char *s) {
 	free(std);
 }
 
+void	test_atoibase(char *s, char *base, int std) {
+	int	val = ft_atoi_base(s, base);
+
+	test(val == std);
+	_arg(_s(s) _sep _s(base));
+	_ft(_d(val))
+	_std(_d(std))
+}
+
 int	main(void)
 {
 	puts("--- Strlen ---");
@@ -188,6 +197,34 @@ int	main(void)
 	test_strdup("1");
 	test_strdup("");
 	test_strdup("\0test");
+
+	puts("--- Atoibase ---");
+	test_atoibase("7", "ab7c", 2);
+	test_atoibase("7", "ab7c+", 0);
+	test_atoibase("7", "abc7-", 0);
+	test_atoibase("7", " ab7c", 0);
+	test_atoibase("7", "ab 7c", 0);
+	test_atoibase("7", "ab\t7c", 0);
+	test_atoibase("7", "ab\f7c", 0);
+	test_atoibase("7", "ab\n7c", 0);
+	test_atoibase("7", "ab\r7c", 0);
+	test_atoibase("7", "ab\v7c", 0);
+	test_atoibase("7", "abc7a", 0);
+	test_atoibase("7", "01273", 3);
+	test_atoibase("7", "01+273", 0);
+	test_atoibase("7", "01-273", 0);
+	test_atoibase("7", "11", 0);
+	test_atoibase("7", "1", 0);
+	test_atoibase("7", "01", 0);
+	test_atoibase("7", "013", 0);
+	test_atoibase("7", "0123", 0);
+	test_atoibase("7", "012345", 0);
+	test_atoibase("7", "", 0);
+	test_atoibase("7865", "0123456789", 7865);
+	test_atoibase("7865", "0123456789abcdef", 0x7865);
+	test_atoibase("DEF7865", "0123456789ABCDEF", 0xDEF7865);
+
+	printf("return...\n");
 
 	return (0);
 }

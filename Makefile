@@ -20,9 +20,11 @@ fclean: clean
 
 re: fclean all
 
+bonus: all
+
 test: re
 	gcc $(CFLAGS) test.c $(NAME)
 	./a.out
 	rm -rf a.out
 
-.PHONY: all clean fclean re test
+.PHONY: all clean fclean re bonus test
