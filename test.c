@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <errno.h>
 #include "libasm.h"
 
 #define ERROR "\033[91mError\033[0m "
@@ -17,15 +18,32 @@
 #define PASS BG_GREEN " PASS " RESET
 #define FAIL BG_RED " FAIL " RESET
 
+// test
+#define test(cond) printf((cond) ? PASS : FAIL);
+// printf
+#define _f(...) printf(__VA_ARGS__);
+// Print a string
+#define _s(s) printf(GREEN "\"%s\"" RESET, s);
+// Print ints
+#define _lu(n) printf(ORANGE "%lu" RESET, n);
+#define _d(n) printf(ORANGE "%d" RESET, n);
+#define _ld(n) printf(ORANGE "%ld" RESET, n);
+
+#define _sep printf(", ");
+
+#define _arg(...) _f(" (") __VA_ARGS__ _f(") =>")
+#define _ft(...) _f(" ft: (") __VA_ARGS__ _f(")")
+#define _std(...) _f(" std: (") __VA_ARGS__ _f(")\n")
+
 void	test_strlen(char *s)
 {
 	const size_t	ftlen = ft_strlen(s);
 	const size_t	stdlen = strlen(s);
 
-	printf(ftlen == stdlen ? PASS : FAIL);
-	printf(" (" GREEN "\"%s\"" RESET ") =>", s);
-	printf(" ft: " ORANGE "%lu" RESET, ftlen);
-	printf(" std: " ORANGE "%lu" ENDL, stdlen);
+	test(ftlen == stdlen);
+	_arg(_s(s))
+	_ft(_lu(ftlen))
+	_std(_lu(stdlen))
 }
 
 void	test_strcpy(char *src)
@@ -36,10 +54,10 @@ void	test_strcpy(char *src)
 	const char	*ftcpy = ft_strcpy(ftdst, src);
 	const char	*stdcpy = strcpy(stddst, src);
 
-	printf(ftcpy == ftdst && !strcmp(ftdst, stddst) ? PASS : FAIL);
-	printf(" (" GREEN "\"%s\"" RESET ") =>", src);
-	printf(" ft: " GREEN "\"%s\"" RESET, ftcpy);
-	printf(" std: " GREEN "\"%s\"" ENDL, stdcpy);
+	test(ftcpy == ftdst && !strcmp(ftdst, stddst));
+	_arg(_s(src))
+	_ft(_s(ftcpy))
+	_std(_s(stdcpy))
 }
 
 void	test_strcmp(char *s1, char *s2)
@@ -47,10 +65,12 @@ void	test_strcmp(char *s1, char *s2)
 	const int	ftcmp = ft_strcmp(s1, s2);
 	const int	stdcmp = strcmp(s1, s2);
 
-	printf(ftcmp == stdcmp ? PASS : FAIL);
-	printf(" (" GREEN "\"%s\"" RESET ", " GREEN "\"%s\"" RESET ") =>", s1, s2);
-	printf(" ft: " ORANGE "%d" RESET, ftcmp);
-	printf(" std: " ORANGE "%d" ENDL, stdcmp);
+	test(ftcmp == stdcmp
+		|| (ftcmp < 0 && stdcmp < 0)
+		|| (ftcmp > 0 && stdcmp > 0));
+	_arg(_s(s1) _sep _s(s2))
+	_ft(_d(ftcmp))
+	_std(_d(stdcmp))
 }
 
 typedef struct {
@@ -73,29 +93,51 @@ t_pipes	pipes()
 	return (pipes);
 }
 
-void	test_write(t_pipes pipes, const void *buf, size_t len)
+void	test_write(t_pipes pipes, const char *buf, size_t len)
 {
+	errno = 0;
 	const ssize_t	ftwrite = ft_write(pipes.ft[1], buf, len);
-	char			ftwritten[len];
-	printf("write\n");
-	read(pipes.ft[0], ftwritten, len);
-	printf("read\n");
+	int				fterrno = errno;
+	char			ftwritten[len + 1];
+	ssize_t			ftread = read(pipes.ft[0], ftwritten, len);
+	ftwritten[ftread < 0 ? 0 : ftread] = 0;
 
+	errno = 0;
 	const ssize_t	stdwrite = write(pipes.std[1], buf, len);
-	char			stdwritten[len];
-	read(pipes.std[0], stdwritten, len);
+	int				stderrno = errno;
+	char			stdwritten[len + 1];
+	ssize_t			stdread = read(pipes.std[0], stdwritten, len);
+	stdwritten[stdread < 0 ? 0 : stdread] = 0;
 
-	printf(ftwrite == stdwrite && !strncmp(ftwritten, stdwritten, len)
-			? PASS
-			: FAIL);
-	printf(" ft: \"%.*s\" (%zi)", (int)len, ftwritten, ftwrite);
-	printf(" std: \"%.*s\" (%zi)\n", (int)len, stdwritten, stdwrite);
-
-	// check errno
+	test(ftwrite == stdwrite && fterrno == stderrno
+		&& (ftwrite == -1 || !strncmp(ftwritten, stdwritten, len)));
+	_arg(_s(buf) _sep _lu(len))
+	_ft(_s(ftwritten) _sep _ld(ftwrite) _sep _d(fterrno))
+	_std(_s(stdwritten) _sep _ld(stdwrite) _sep _d(stderrno))
 }
 
-// void	test_read()
-// {}
+void	test_read(t_pipes pipes, const char *buf, size_t len)
+{
+	write(pipes.ft[1], buf, len);
+	char			ftwritten[len + 1];
+	errno = 0;
+	ssize_t			ftread = ft_read(pipes.ft[0], ftwritten, len);
+	int				fterrno = errno;
+	ftwritten[ftread < 0 ? 0 : ftread] = 0;
+
+	write(pipes.std[1], buf, len);
+	char			stdwritten[len + 1];
+	errno = 0;
+	ssize_t			stdread = read(pipes.std[0], stdwritten, len);
+	int				stderrno = errno;
+	stdwritten[stdread < 0 ? 0 : stdread] = 0;
+
+	test(ftread == stdread && fterrno == stderrno
+		&& (ftread == -1 || !strncmp(ftwritten, stdwritten, len)));
+	_arg(_s(buf) _sep _lu(len))
+	_ft(_s(ftwritten) _sep _ld(ftread) _sep _d(fterrno))
+	_std(_s(stdwritten) _sep _ld(stdread) _sep _d(stderrno))
+}
 
 int	main(void)
 {
@@ -113,6 +155,7 @@ int	main(void)
 	test_strcmp("Hello world", "Hello world");
 	test_strcmp("abc", "bac");
 	test_strcmp("abc", "aba");
+	test_strcmp("abc", "abcz");
 	test_strcmp("", "");
 	test_strcmp("\0a", "\0b");
 
@@ -122,9 +165,12 @@ int	main(void)
 	test_write(pipes(), "Error fd Hello world", 8);
 	test_write(pipes_from(-1), "Error fd Hello world", 8);
 
-	// puts("--- Read ---");
-	// test_read(pipes(), "Hello world", 8);
-	// test_read(pipes_from(-1), "Hello world", 8);
+	puts("--- Read ---");
+	test_read(pipes(), "Hello world", 8);
+	test_read(pipes(), "Hello world", 11);
+	test_read(pipes_from(-1), "Hello world", 8);
+
+	puts("--- Strdup ---");
 
 	return (0);
 }

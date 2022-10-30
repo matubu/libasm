@@ -20,7 +20,7 @@ fclean: clean
 re: fclean all
 
 test: re
-	gcc $(CFLAGS) test.c $(NAME)
+	gcc $(CFLAGS) -fsanitize=address test.c $(NAME)
 	./a.out
 	rm -rf a.out
 
