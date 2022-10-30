@@ -25,6 +25,6 @@ bonus: all
 test: re
 	gcc $(CFLAGS) test.c $(NAME)
 	./a.out
-	rm -rf a.out
+	@rm -rf a.out
 
 .PHONY: all clean fclean re bonus test

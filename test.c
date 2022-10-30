@@ -4,9 +4,10 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <errno.h>
+#include <ctype.h>
 #include "libasm.h"
 
-#define ERROR "\033[91mError\033[0m "
+#define RED "\033[91m"
 #define GREEN "\033[92m"
 #define ORANGE "\033[33m"
 #define RESET "\033[0m"
@@ -15,15 +16,43 @@
 #define BG_RED "\033[101;30m"
 #define BG_GREEN "\033[102;30m"
 
+#define ERROR RED "Error " RESET
 #define PASS BG_GREEN " PASS " RESET
 #define FAIL BG_RED " FAIL " RESET
 
+int fails = 0;
+
 // test
-#define test(cond) printf((cond) ? PASS : FAIL);
+#define test(cond) { \
+	int passed = cond; \
+	printf(passed ? PASS : FAIL); \
+	if (!passed) ++fails; \
+}
 // printf
 #define _f(...) printf(__VA_ARGS__);
 // Print a string
-#define _s(s) printf(GREEN "\"%s\"" RESET, s);
+void _put_s(const char *s) {
+	printf(GREEN "\"");
+	while (*s) {
+		switch (*s)
+		{
+		case '\t': printf(RED "\\t" GREEN); break;
+		case '\n': printf(RED "\\n" GREEN); break;
+		case '\v': printf(RED "\\v" GREEN); break;
+		case '\f': printf(RED "\\f" GREEN); break;
+		case '\r': printf(RED "\\r" GREEN); break;
+		default:
+			if (isprint(*s))
+				putchar(*s);
+			else
+				printf(RED "\\x%02x" GREEN, *s);
+		break;
+		}
+		++s;
+	}
+	printf("\"" RESET);
+}
+#define _s(s) _put_s(s);
 // Print ints
 #define _lu(n) printf(ORANGE "%lu" RESET, n);
 #define _d(n) printf(ORANGE "%d" RESET, n);
@@ -223,8 +252,18 @@ int	main(void)
 	test_atoibase("7865", "0123456789", 7865);
 	test_atoibase("7865", "0123456789abcdef", 0x7865);
 	test_atoibase("DEF7865", "0123456789ABCDEF", 0xDEF7865);
+	test_atoibase("765", "01234567", 00765);
+	test_atoibase("-765", "01234567", -00765);
+	test_atoibase("--765", "01234567", 00765);
+	test_atoibase("---765", "01234567", -00765);
+	test_atoibase("+765", "01234567", 00765);
+	test_atoibase("-+-765", "01234567", 00765);
+	test_atoibase("+-+765", "01234567", -00765);
+	test_atoibase("+-+7658456", "01234567", -00765);
+	test_atoibase("+-+765 ", "01234567", -00765);
+	test_atoibase("+-+\n765 ", "01234567", 0);
 
-	printf("return...\n");
+	printf("Failed tests: " ORANGE "%d\n" RESET, fails);
 
-	return (0);
+	return (!!fails);
 }
