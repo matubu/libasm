@@ -2,6 +2,7 @@ NAME=libasm.a
 SRCS= $(wildcard *.s)
 OBJS=$(SRCS:.s=.o)
 CFLAGS=-Wall -Wextra -Werror
+CFLAGS+=-fsanitize=address -g
 
 all: $(NAME)
 
@@ -20,7 +21,7 @@ fclean: clean
 re: fclean all
 
 test: re
-	gcc $(CFLAGS) -fsanitize=address test.c $(NAME)
+	gcc $(CFLAGS) test.c $(NAME)
 	./a.out
 	rm -rf a.out
 

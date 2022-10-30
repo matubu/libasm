@@ -139,6 +139,19 @@ void	test_read(t_pipes pipes, const char *buf, size_t len)
 	_std(_s(stdwritten) _sep _ld(stdread) _sep _d(stderrno))
 }
 
+void	test_strdup(char *s) {
+	char	*ft = ft_strdup(s);
+	char	*std = strdup(s);
+
+	test(ft != NULL && std != NULL && !strcmp(ft, std));
+	_arg(_s(s))
+	_ft(_s(ft))
+	_std(_s(std))
+
+	free(ft);
+	free(std);
+}
+
 int	main(void)
 {
 	puts("--- Strlen ---");
@@ -171,6 +184,10 @@ int	main(void)
 	test_read(pipes_from(-1), "Hello world", 8);
 
 	puts("--- Strdup ---");
+	test_strdup("test hello");
+	test_strdup("1");
+	test_strdup("");
+	test_strdup("\0test");
 
 	return (0);
 }
