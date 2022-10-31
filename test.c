@@ -263,6 +263,11 @@ int	main(void)
 	test_atoibase("+-+765 ", "01234567", -00765);
 	test_atoibase("+-+\n765 ", "01234567", 0);
 
+	// puts("--- listPushFront ---");
+	// puts("--- listPushSize ---");
+	// puts("--- listPushSort ---");
+	// puts("--- listPushRemoveIf ---");
+
 	printf("Failed tests: " ORANGE "%d\n" RESET, fails);
 
 	return (!!fails);

@@ -40,8 +40,6 @@ global ft_atoi_base
 	%endrep
 %endmacro
 
-; TODO map<char> -> int
-
 %define value rax
 %define str rdi
 %define base rsi
