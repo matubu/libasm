@@ -194,6 +194,13 @@ void	test_atoibase(char *s, char *base, int std) {
 	_std(_d(std))
 }
 
+int		strcmp_wrap(char *a, char *b) {
+	printf("cmp %s %s\n", a, b);
+	int n = strcmp(a, b);
+	printf("%d\n", n);
+	return (n);
+}
+
 int	main(void)
 {
 	puts("--- Strlen ---");
@@ -271,8 +278,21 @@ int	main(void)
 	test_atoibase(NULL, NULL, 0);
 
 	// puts("--- listPushFront ---");
+
+
 	// puts("--- listPushSize ---");
-	// puts("--- listPushSort ---");
+	puts("--- listPushSort ---");
+
+	t_list	*list = NULL;
+	ft_list_push_front(&list, strdup("apple"));
+	ft_list_push_front(&list, strdup("milk"));
+	ft_list_push_front(&list, strdup("bread"));
+	ft_list_sort(&list, strcmp_wrap);
+
+	for (t_list *node = list; node; node = node->next) {
+		printf("%s\n", (char *)node->data);
+	}
+
 	// puts("--- listPushRemoveIf ---");
 
 	printf("Failed tests: " ORANGE "%d\n" RESET, fails);

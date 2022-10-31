@@ -40,7 +40,7 @@ _ft_list_sort_it:
 	mov rsi, [next]
 	call [rsp+8] ; call the function with the two data as arguments
 
-	cmp rax, 0
+	cmp eax, 0
 	jg _ft_list_swap
 
 	mov curr, [rsp+24] ; save the current as the old next
