@@ -2,3 +2,5 @@
 a.out
 libasm.a
 libasmTester
+.vscode
+42libasm_tester/

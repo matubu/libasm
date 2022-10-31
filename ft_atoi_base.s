@@ -51,6 +51,12 @@ global ft_atoi_base
 ft_atoi_base:
 	xor value, value ; value = 0
 
+	test str, str
+	jz _ft_atoi_base_return
+
+	test base, base
+	jz _ft_atoi_base_return
+
 	cmp byte [base], 0
 	je _ft_atoi_base_return ; if (*base == '\0') return ;
 

@@ -32,6 +32,10 @@ int fails = 0;
 #define _f(...) printf(__VA_ARGS__);
 // Print a string
 void _put_s(const char *s) {
+	if (!s) {
+		printf(ORANGE "NULL" RESET);
+		return ;
+	}
 	printf(GREEN "\"");
 	while (*s) {
 		switch (*s)
@@ -262,6 +266,9 @@ int	main(void)
 	test_atoibase("+-+7658456", "01234567", -00765);
 	test_atoibase("+-+765 ", "01234567", -00765);
 	test_atoibase("+-+\n765 ", "01234567", 0);
+	test_atoibase("+-+\n765 ", NULL, 0);
+	test_atoibase(NULL, "01234567", 0);
+	test_atoibase(NULL, NULL, 0);
 
 	// puts("--- listPushFront ---");
 	// puts("--- listPushSize ---");
