@@ -2,6 +2,8 @@ section .text
 
 global ft_strlen
 
+; https://www.youtube.com/watch?v=WiyUf8u78-w
+
 ; size_t ft_strlen(const char *s: rdi) -> rax
 ft_strlen:
 	xor rax, rax            ; set len to 0
